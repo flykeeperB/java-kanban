@@ -1,44 +1,20 @@
-import java.util.ArrayList;
-
 public class Task {
     private int id;
     private String name;
     private String description;
     private TaskStatus status;
-    protected TaskStorage taskStorage;
 
-    //=====================================================
-    //
-    //  Всякие конструкторы
-    //
-    //======================================================
-
-    //Task() {
-    //}
-
-    public Task(String name, String description) {
-        this.name = name;
-        this.description = description;
-        this.id = 0;
-        this.status = TaskStatus.NEW;
+    public Task(String name, String discription) {
+        this.setName(name);
+        this.setDiscription(discription);
+        this.setID(-1);
+        this.setStatus(TaskStatus.NEW);
     }
 
-    public Task(String name, String description, TaskStatus status, int id) {
-        this(name, description);
-        this.id = id;
-        this.status = status;
-    }
-
-
-    //======================================================
-    //
-    //  Геттеры-сеттеры
-    //
-    //======================================================
-
-
-    public void setTaskStorage(TaskStorage taskStorage) {
-        this.taskStorage = taskStorage;
+    public Task(String name, String discription, TaskStatus status, int id) {
+        this(name, discription);
+        this.setID(id);
+        this.setStatus(status);
     }
 
     public Integer getId() {
@@ -48,7 +24,6 @@ public class Task {
     public void setID(int id) {
         this.id = id;
     }
-
 
     public String getName() {
         return name;
@@ -76,7 +51,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return this.getClass().toString()+"{" + // имя класса
+        return this.getClass().toString() + "{" + // имя класса
                 "status='" + status.toString() + '\'' + // поле1=значение1
                 ", id='" + id + '\'' + // поле1=значение1
                 ", name='" + name + '\'' + // поле2=значение2

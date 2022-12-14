@@ -1,38 +1,35 @@
 public class Subtask extends Task {
-    private Epic epic;
+    private Integer epicId;
 
-    //======================================================
-    //
-    //  Конструкторы
-    //
-    //======================================================
-
-    public Subtask(Epic epic, String name, String description) {
-        super(name, description);
-        this.epic = epic;
+    public Subtask(Epic epic, String name, String discription) {
+        super(name, discription);
+        this.setEpicId(epic.getId());
     }
 
-    public Subtask(Epic epic, String name, String description, TaskStatus status, int id) {
-        super(name, description, status, id);
-        this.epic = epic;
+    public Subtask(Epic epic, String name, String discription, TaskStatus status, int id) {
+        super(name, discription, status, id);
+        this.setEpicId(epic.getId());
     }
 
-    //======================================================
-    //
-    //  Геттеры-сеттеры
-    //
-    //======================================================
-
-    public Subtask(String name, String description, Epic epic) {
-        super(name, description);
-        this.epic = epic;
+    public Integer getEpicId() {
+        return epicId;
     }
 
-    public Epic getEpic() {
-        return epic;
+    public void setEpicId(Integer epicId) {
+        if (epicId == -1) {
+            throw new Error("Экземпляр класса Epic перед добавлением подзадачи предварительно не добавлен в менеджер");
+        }
+        this.epicId = epicId;
     }
 
-    public void setEpic(Epic epic) {
-        this.epic = epic;
+    @Override
+    public String toString() {
+        return this.getClass().toString() + "{" + // имя класса
+                "status='" + this.getStatus().toString() + '\'' + // поле1=значение1
+                ", id='" + this.getId() + '\'' + // поле1=значение1
+                ", name='" + this.getName() + '\'' + // поле2=значение2
+                ", description=" + this.getDiscription() + // поле3=значение3
+                ", epicId=" + this.epicId + // поле3=значение3
+                '}';
     }
 }

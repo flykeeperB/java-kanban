@@ -1,57 +1,31 @@
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Epic extends Task {
+    public ArrayList<Integer> subtaskIds;
 
-    //=====================================================
-    //
-    //  Всякие конструкторы
-    //
-    //======================================================
-
-    public Epic(String name, String description) {
-        super(name, description);
+    public Epic(String name, String discription) {
+        super(name, discription);
+        this.subtaskIds = new ArrayList<>();
     }
 
-    public Epic(String name, String description, TaskStatus status, int id) {
-        super(name, description, status, id);
+    public Epic(String name, String discription, TaskStatus status, int id) {
+        super(name, discription, status, id);
+        this.subtaskIds = new ArrayList<>();
     }
 
-    //======================================================
-    //
-    //  Геттеры-сеттеры
-    //
-    //======================================================
-
-    @Override
-    public TaskStatus getStatus() {
-        if (this.getSubtask().isEmpty()) {
-            //Если список подзадач пуст, то статус NEW
-            return TaskStatus.NEW;
-        }
-
-        TaskStatus status = null; //Промежуточное значение статуса
-
-        //Обходим подзадачи
-        for (Task subtask : this.getSubtask().values()) {
-            if (status == null) {
-                //Если статус ранее не определялся, значит это первая итерация, присваиваем и идем дальше
-                status = subtask.getStatus();
-            } else if (status != subtask.getStatus()) {
-                //Если статус при обходе меняется, значит задачи разнородные
-                return TaskStatus.IN_PROGRESS;
-            }
-        }
-        //Если не попались разнородные задачи, значит status содержит статус всех подзадач
-        return status;
+    public ArrayList<Integer> getSubtaskIds() {
+        return subtaskIds;
     }
 
     @Override
-    public void setStatus(TaskStatus status) {
-        //блокируем ручное изменение статуса, переопределяя его
-    }
-
-    public HashMap<Integer, Task> getSubtask() {
-        return this.taskStorage.getNodeItems(this);
+    public String toString() {
+        return this.getClass().toString() + "{" + // имя класса
+                "status='" + this.getStatus().toString() + '\'' + // поле1=значение1
+                ", id='" + this.getId() + '\'' + // поле1=значение1
+                ", name='" + this.getName() + '\'' + // поле2=значение2
+                ", description=" + this.getDiscription() + // поле3=значение3
+                ", subtaskIds=" + this.subtaskIds.toString() + // поле3=значение3
+                '}';
     }
 
 }

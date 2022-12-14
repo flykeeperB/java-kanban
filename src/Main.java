@@ -1,39 +1,59 @@
-import java.util.ArrayList;
-
 public class Main {
 
     public static void main(String[] args) {
-
         TaskManager taskManager = new TaskManager();
-        taskManager.createTask(new Task("Задача 1","Самая первая задача"));
-        taskManager.createTask(new Task("Задача 2","Вторая задача"));
-        taskManager.createTask(new Task("Задача 3","Третья задача"));
-        Epic epic1 = new Epic("Эпическая задача 1","Описание эпической задачи 1");
-        taskManager.createTask(epic1);
 
-        Subtask subtask1 = new Subtask(epic1,"Подзадача 1","Описание подзадачи 1");
-        taskManager.createTask(subtask1);
-        Subtask subtask2 = new Subtask(epic1,"Подзадача 2","Описание подзадачи 2");
-        taskManager.createTask(subtask2);
+        //тестирование
+        Task task1 = new Task("Задача 1", "Самая первая задача");
+        Task task2 = new Task("Задача 2", "Вторая задача");
+        taskManager.append(task1);
+        taskManager.append(task2);
 
-        //skManager.toString();
+        Epic epic1 = new Epic("Эпик 1", "Описание эпической задачи 1");
+        taskManager.append(epic1);
+        Subtask subtask1OfEpic1 = new Subtask(epic1, "Подзадача 1", "Описание подзадачи 1 эпика 1");
+        taskManager.append(subtask1OfEpic1);
+        Subtask subtask2OfEpic1 = new Subtask(epic1, "Подзадача 2", "Описание подзадачи 2 эпика 1");
+        taskManager.append(subtask2OfEpic1);
 
-        Task task = taskManager.getTaskById(10);
-        if (task!=null) {
-            System.out.println(task.toString());
-            System.out.println("=".repeat(20));
-        };
-        System.out.println(taskManager.toString());
+        Epic epic2 = new Epic("Эпик 2", "Описание эпической задачи 2");
+        taskManager.append(epic2);
+        Subtask subtask1OfEpic2 = new Subtask(epic2, "Подзадача 1", "Описание подзадачи 1 эпика 2");
+        taskManager.append(subtask1OfEpic2);
 
-        /*if (taskManager.updateTask(new Task("Задачка","Была подзадача, стала задача",TaskStatus.NEW,5))) {
-            System.out.println("успешно обновлено");
-        } else {
-            System.out.println("не обновлено, элемент не найден");
-        }*/
+        System.out.println("");
+        System.out.println(taskManager);
+        System.out.println("");
 
-        System.out.println("=".repeat(20));
-        //taskManager.removeById(3);
+        System.out.println("Изменяем статус подзадачи 1 эпика 1");
+        subtask1OfEpic1.setStatus(TaskStatus.DONE);
+        taskManager.update(subtask1OfEpic1);
+        System.out.println("Изменяем статус подзадачи 1 эпика 2");
+        subtask1OfEpic2.setStatus(TaskStatus.DONE);
+        taskManager.update(subtask1OfEpic2);
 
-        System.out.println(taskManager.toString());
+        System.out.println("");
+        System.out.println(taskManager);
+        System.out.println("");
+
+        System.out.println("Удаляем задачу 2");
+        taskManager.delete(1);
+        System.out.println("Удаляем эпик 2");
+        taskManager.delete(5);
+
+        System.out.println("");
+        System.out.println(taskManager);
+        System.out.println("");
+
+        //дополнительные тесты
+        /*System.out.println("Обновление несуществующей задачи (не должно происходить)");
+        Task task20 = new Task("Задача 20", "Задача не добавлялась в менеджер", TaskStatus.NEW, 20);
+        taskManager.update(task20);
+        System.out.println("Удаление несуществующей задачи (не должно происходить)");
+        taskManager.delete(task20.getId());
+
+        System.out.println("");
+        System.out.println(taskManager);
+        System.out.println("");*/
     }
 }
