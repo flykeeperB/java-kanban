@@ -1,5 +1,7 @@
+package tasks;
+
 public class Subtask extends Task {
-    private Integer epicId;
+    protected Integer epicId;
 
     public Subtask(Epic epic, String name, String discription) {
         super(name, discription);
@@ -22,7 +24,6 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
-    @Override
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
                 "status='" + this.getStatus().toString() + '\'' + // поле1=значение1

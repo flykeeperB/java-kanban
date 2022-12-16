@@ -1,8 +1,10 @@
+package tasks;
+
 public class Task {
-    private int id;
-    private String name;
-    private String description;
-    private TaskStatus status;
+    protected int id;
+    protected String name;
+    protected String description;
+    protected TaskStatus status;
 
     public Task(String name, String discription) {
         this.setName(name);

@@ -1,23 +1,41 @@
+package tasks;
+
 import java.util.ArrayList;
 
 public class Epic extends Task {
-    public ArrayList<Integer> subtaskIds;
+    protected ArrayList<Integer> subtaskIds;
 
     public Epic(String name, String discription) {
         super(name, discription);
         this.subtaskIds = new ArrayList<>();
     }
 
+
     public Epic(String name, String discription, TaskStatus status, int id) {
         super(name, discription, status, id);
         this.subtaskIds = new ArrayList<>();
     }
 
-    public ArrayList<Integer> getSubtaskIds() {
-        return subtaskIds;
+    public void clearSubtaskIds() {
+        this.subtaskIds.clear();
     }
 
-    @Override
+    public void addSubtaskIds(Integer subtaskId) {
+        if (!this.subtaskIds.contains(subtaskId)) {
+            this.subtaskIds.add(subtaskId);
+        }
+    }
+
+    public void removeSubtaskIds(Integer subtaskId) {
+        if (this.subtaskIds.contains(subtaskId)) {
+            this.subtaskIds.remove(this.subtaskIds.indexOf(subtaskId));
+        }
+    }
+
+    public ArrayList<Integer> getSubtaskIds() {
+        return new ArrayList<>(this.subtaskIds);
+    }
+
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
                 "status='" + this.getStatus().toString() + '\'' + // поле1=значение1

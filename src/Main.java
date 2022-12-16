@@ -1,3 +1,9 @@
+import taskmanager.TaskManager;
+import tasks.Epic;
+import tasks.Subtask;
+import tasks.Task;
+import tasks.TaskStatus;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -6,20 +12,20 @@ public class Main {
         //тестирование
         Task task1 = new Task("Задача 1", "Самая первая задача");
         Task task2 = new Task("Задача 2", "Вторая задача");
-        taskManager.append(task1);
-        taskManager.append(task2);
+        taskManager.appendTask(task1);
+        taskManager.appendTask(task2);
 
         Epic epic1 = new Epic("Эпик 1", "Описание эпической задачи 1");
-        taskManager.append(epic1);
+        taskManager.appendEpic(epic1);
         Subtask subtask1OfEpic1 = new Subtask(epic1, "Подзадача 1", "Описание подзадачи 1 эпика 1");
-        taskManager.append(subtask1OfEpic1);
+        taskManager.appendSubtask(subtask1OfEpic1);
         Subtask subtask2OfEpic1 = new Subtask(epic1, "Подзадача 2", "Описание подзадачи 2 эпика 1");
-        taskManager.append(subtask2OfEpic1);
+        taskManager.appendSubtask(subtask2OfEpic1);
 
         Epic epic2 = new Epic("Эпик 2", "Описание эпической задачи 2");
-        taskManager.append(epic2);
+        taskManager.appendEpic(epic2);
         Subtask subtask1OfEpic2 = new Subtask(epic2, "Подзадача 1", "Описание подзадачи 1 эпика 2");
-        taskManager.append(subtask1OfEpic2);
+        taskManager.appendSubtask(subtask1OfEpic2);
 
         System.out.println("");
         System.out.println(taskManager);
@@ -27,10 +33,10 @@ public class Main {
 
         System.out.println("Изменяем статус подзадачи 1 эпика 1");
         subtask1OfEpic1.setStatus(TaskStatus.DONE);
-        taskManager.update(subtask1OfEpic1);
+        taskManager.updateSubtask(subtask1OfEpic1);
         System.out.println("Изменяем статус подзадачи 1 эпика 2");
         subtask1OfEpic2.setStatus(TaskStatus.DONE);
-        taskManager.update(subtask1OfEpic2);
+        taskManager.updateSubtask(subtask1OfEpic2);
 
         System.out.println("");
         System.out.println(taskManager);
