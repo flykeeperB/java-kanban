@@ -1,6 +1,6 @@
-package taskmanager;
+package service;
 
-import tasks.*;
+import model.*;
 import java.util.List;
 
 public interface HistoryManager {

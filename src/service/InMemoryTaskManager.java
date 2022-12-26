@@ -1,10 +1,10 @@
-package taskmanager;
+package service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import tasks.*;
+import model.*;
 
 public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Task> tasks;

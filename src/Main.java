@@ -1,11 +1,10 @@
-import taskmanager.Managers;
-import taskmanager.TaskManager;
-import tasks.Epic;
-import tasks.Subtask;
-import tasks.Task;
-import tasks.TaskStatus;
+import service.Managers;
+import service.TaskManager;
+import model.Epic;
+import model.Subtask;
+import model.Task;
+import model.TaskStatus;
 
-import java.sql.SQLOutput;
 import java.util.List;
 import java.util.Random;
 

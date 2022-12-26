@@ -1,8 +1,8 @@
-package taskmanager;
+package service;
 
 import java.util.List;
 
-import tasks.*;
+import model.*;
 
 public interface TaskManager {
 

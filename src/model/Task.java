@@ -1,4 +1,4 @@
-package tasks;
+package model;
 
 public class Task {
     protected int id;
