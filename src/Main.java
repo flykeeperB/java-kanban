@@ -17,15 +17,15 @@ public class Main {
 
         //создадим двадцать задач
         for (int i = 1; i < 11; i++) {
-            taskManager.appendTask(new Task("Задача "+i, "Описание задачи "+i));
+            taskManager.appendTask(new Task("Задача " + i, "Описание задачи " + i));
         }
 
         //создадим пять эпиков cо случайным числом подзадач в диапазоне от 0 до 5
         for (int i = 1; i < 6; i++) {
-            Epic epic = new Epic("Эпик "+i, "Описание эпика "+i);
+            Epic epic = new Epic("Эпик " + i, "Описание эпика " + i);
             taskManager.appendEpic(epic);
             int max = new Random().nextInt(4);
-            for (int j = 1; j < 1+max; j++) {
+            for (int j = 1; j < 1 + max; j++) {
                 taskManager.appendSubtask(new Subtask(epic, "Подзадача " + j, "Описание подзадачи " + j + " эпика " + i));
             }
         }
@@ -42,9 +42,9 @@ public class Main {
         tasks = taskManager.getTasks();
         tasks.addAll(taskManager.getEpics());
         tasks.addAll(taskManager.getSubtasks());
-        for (int i = 0; i < 12 ; i++) {
-            Task task = tasks.get(new Random().nextInt(tasks.size()-1));
-            System.out.println("Обращаемся через get к "+task.getClass().toString()+" id = "+task.getId());
+        for (int i = 0; i < 12; i++) {
+            Task task = tasks.get(new Random().nextInt(tasks.size() - 1));
+            System.out.println("Обращаемся через get к " + task.getClass().toString() + " id = " + task.getId());
             if (task instanceof Epic) {
                 taskManager.getEpic(task.getId());
             } else if (task instanceof Subtask) {
@@ -58,7 +58,7 @@ public class Main {
         System.out.println("История:");
         List<Task> history = taskManager.getHistory();
         for (int i = 0; i < history.size(); i++) {
-            System.out.println((i+1)+" - "+history.get(i).toString());
+            System.out.println((i + 1) + " - " + history.get(i).toString());
         }
 
         // Проверяем работоспособность методов удаления
@@ -68,9 +68,9 @@ public class Main {
         tasks = taskManager.getTasks();
         tasks.addAll(taskManager.getEpics());
         tasks.addAll(taskManager.getSubtasks());
-        for (int i = 0; i < 8 ; i++) {
-            Task task = tasks.get(new Random().nextInt(tasks.size()-1));
-            System.out.println("Удаляем "+task.getClass().toString()+" id = "+task.getId());
+        for (int i = 0; i < 8; i++) {
+            Task task = tasks.get(new Random().nextInt(tasks.size() - 1));
+            System.out.println("Удаляем " + task.getClass().toString() + " id = " + task.getId());
             if (task instanceof Epic) {
                 taskManager.deleteEpic(task.getId());
             } else if (task instanceof Subtask) {
@@ -87,17 +87,17 @@ public class Main {
         tasks = taskManager.getTasks();
         tasks.addAll(taskManager.getEpics());
         tasks.addAll(taskManager.getSubtasks());
-        for (int i = 0; i < 8 ; i++) {
-            Task task = tasks.get(new Random().nextInt(tasks.size()-1));
+        for (int i = 0; i < 8; i++) {
+            Task task = tasks.get(new Random().nextInt(tasks.size() - 1));
             if (task instanceof Epic) {
-                System.out.println("Обновляем "+task.getClass().toString()+" id = "+task.getId());
-                Epic epic = new Epic(task.getName()+" (upd)",task.getDiscription()+" ОБНОВЛЕНО",task.getStatus(), task.getId());
+                System.out.println("Обновляем " + task.getClass().toString() + " id = " + task.getId());
+                Epic epic = new Epic(task.getName() + " (upd)", task.getDiscription() + " ОБНОВЛЕНО", task.getStatus(), task.getId());
                 taskManager.updateEpic(epic);
             } else if (task instanceof Subtask) {
 
             } else {
-                System.out.println("Обновляем "+task.getClass().toString()+" id = "+task.getId());
-                Task updtask = new Task(task.getName()+" (upd)",task.getDiscription()+" ОБНОВЛЕНО",TaskStatus.DONE, task.getId());
+                System.out.println("Обновляем " + task.getClass().toString() + " id = " + task.getId());
+                Task updtask = new Task(task.getName() + " (upd)", task.getDiscription() + " ОБНОВЛЕНО", TaskStatus.DONE, task.getId());
                 taskManager.updateTask(updtask);
             }
         }
@@ -112,7 +112,7 @@ public class Main {
         System.out.println("История:");
         history = taskManager.getHistory();
         for (int i = 0; i < history.size(); i++) {
-            System.out.println((i+1)+" - "+history.get(i).toString());
+            System.out.println((i + 1) + " - " + history.get(i).toString());
         }
 
     }
