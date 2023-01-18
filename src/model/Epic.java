@@ -36,6 +36,7 @@ public class Epic extends Task {
         return new ArrayList<>(this.subtaskIds);
     }
 
+    @Override
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
                 "status='" + this.getStatus().toString() + '\'' + // поле1=значение1
@@ -44,6 +45,29 @@ public class Epic extends Task {
                 ", description=" + this.getDiscription() + // поле3=значение3
                 ", subtaskIds=" + this.subtaskIds.toString() + // поле3=значение3
                 '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        for (Integer subtaskId : subtaskIds) {
+            hash += subtaskId.hashCode();
+        }
+        return hash * 31;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Epic epic = (Epic) o;
+
+        if (!super.equals(epic)) {
+            return false;
+        }
+
+        return subtaskIds.equals(epic.subtaskIds);
     }
 
 }

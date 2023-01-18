@@ -3,117 +3,102 @@ import service.TaskManager;
 import model.Epic;
 import model.Subtask;
 import model.Task;
-import model.TaskStatus;
-
 import java.util.List;
-import java.util.Random;
 
 public class Main {
 
     public static void main(String[] args) {
         TaskManager taskManager = Managers.getDefault();
 
-        //ТЕСТИРОВАНИЕ
+        //ТЕСТЫ
 
-        //создадим двадцать задач
-        for (int i = 1; i < 11; i++) {
-            taskManager.appendTask(new Task("Задача " + i, "Описание задачи " + i));
+        //создайте две задачи, эпик с тремя подзадачами и эпик без подзадач
+        System.out.println("создайте две задачи, эпик с тремя подзадачами и эпик без подзадач");
+        System.out.println("-".repeat(15));
+
+        Task task1 = new Task("Задача 1", "Описание задачи 1");
+        taskManager.appendTask(task1);
+        Task task2 = new Task("Задача 2", "Описание задачи 2");
+        taskManager.appendTask(task2);
+        Epic epic1 = new Epic("Эпик 1", "Описание эпика 1");
+        taskManager.appendEpic(epic1);
+        Subtask subtask1 = new Subtask(epic1, "Подзадача 1", "Описание подзадачи 1 эпика 1");
+        taskManager.appendSubtask(subtask1);
+        Subtask subtask2 = new Subtask(epic1, "Подзадача 2", "Описание подзадачи 2 эпика 1");
+        taskManager.appendSubtask(subtask2);
+        Epic epic2 = new Epic("Эпик 2", "Описание эпика 2");
+        taskManager.appendEpic(epic2);
+
+        //запросите созданные задачи несколько раз в разном порядке
+        //после каждого запроса выведите историю и убедитесь, что в ней нет повторов
+        System.out.println("\n");
+        System.out.println("запросите созданные задачи несколько раз в разном порядке");
+        System.out.println("после каждого запроса выведите историю и убедитесь, что в ней нет повторов");
+        System.out.println("-".repeat(15));
+
+        taskManager.getEpic(epic1.getId());
+        taskManager.getTask(task1.getId());
+        taskManager.getEpic(epic2.getId());
+        taskManager.getSubtask(subtask2.getId());
+        taskManager.getTask(task1.getId());
+        taskManager.getTask(task2.getId());
+        taskManager.getSubtask(subtask1.getId());
+        taskManager.getSubtask(subtask2.getId());
+
+        //выводим историю
+        System.out.println("\n");
+        System.out.println("История 1:");
+        List<Task> history1 = taskManager.getHistory();
+        for (int i = 0; i < history1.size(); i++) {
+            System.out.println((i + 1) + " - " + history1.get(i).toString());
         }
 
-        //создадим пять эпиков cо случайным числом подзадач в диапазоне от 0 до 5
-        for (int i = 1; i < 6; i++) {
-            Epic epic = new Epic("Эпик " + i, "Описание эпика " + i);
-            taskManager.appendEpic(epic);
-            int max = new Random().nextInt(4);
-            for (int j = 1; j < 1 + max; j++) {
-                taskManager.appendSubtask(new Subtask(epic, "Подзадача " + j, "Описание подзадачи " + j + " эпика " + i));
-            }
+        taskManager.getEpic(epic1.getId());
+        taskManager.getTask(task1.getId());
+        taskManager.getEpic(epic2.getId());
+        taskManager.getSubtask(subtask2.getId());
+        taskManager.getSubtask(subtask1.getId());
+        taskManager.getTask(task1.getId());
+        taskManager.getEpic(epic1.getId());
+        taskManager.getTask(task2.getId());
+        taskManager.getTask(task1.getId());
+
+        //выводим историю
+        System.out.println("\n");
+        System.out.println("История 2:");
+        List<Task> history2 = taskManager.getHistory();
+        for (int i = 0; i < history2.size(); i++) {
+            System.out.println((i + 1) + " - " + history2.get(i).toString());
         }
 
-        System.out.println("");
-        System.out.println(taskManager);
-        System.out.println("");
+        //удалите задачу, которая есть в истории, и проверьте, что при печати она не будет выводиться
+        System.out.println("\n");
+        System.out.println("удалите задачу, которая есть в истории, и проверьте," +
+                " что при печати она не будет выводиться");
+        System.out.println("-".repeat(15));
+        taskManager.deleteTask(task1.getId());
 
-        List<Task> tasks;
-
-        System.out.println("");
-        System.out.println("Проверка сохранения истории:");
-        //для проверки истории обращаемся к 12 случайным задачам/эпикам/сабтаскам
-        tasks = taskManager.getTasks();
-        tasks.addAll(taskManager.getEpics());
-        tasks.addAll(taskManager.getSubtasks());
-        for (int i = 0; i < 12; i++) {
-            Task task = tasks.get(new Random().nextInt(tasks.size() - 1));
-            System.out.println("Обращаемся через get к " + task.getClass().toString() + " id = " + task.getId());
-            if (task instanceof Epic) {
-                taskManager.getEpic(task.getId());
-            } else if (task instanceof Subtask) {
-                taskManager.getSubtask(task.getId());
-            } else {
-                taskManager.getTask(task.getId());
-            }
+        //выводим историю
+        System.out.println("\n");
+        System.out.println("История 3:");
+        List<Task> history3 = taskManager.getHistory();
+        for (int i = 0; i < history3.size(); i++) {
+            System.out.println((i + 1) + " - " + history3.get(i).toString());
         }
 
-        System.out.println("");
-        System.out.println("История:");
-        List<Task> history = taskManager.getHistory();
-        for (int i = 0; i < history.size(); i++) {
-            System.out.println((i + 1) + " - " + history.get(i).toString());
+        //удалите эпик с тремя подзадачами и убедитесь, что из истории удалился как сам эпик, так и все его подзадачи
+        System.out.println("\n");
+        System.out.println("удалите эпик с тремя подзадачами и убедитесь, " +
+                "что из истории удалился как сам эпик, так и все его подзадачи");
+        System.out.println("-".repeat(15));
+        taskManager.deleteEpic(epic1.getId());
+
+        //выводим историю
+        System.out.println("\n");
+        System.out.println("История 4:");
+        List<Task> history4 = taskManager.getHistory();
+        for (int i = 0; i < history4.size(); i++) {
+            System.out.println((i + 1) + " - " + history4.get(i).toString());
         }
-
-        // Проверяем работоспособность методов удаления
-        System.out.println("");
-        System.out.println("Проверка удаления записей:");
-        //удаляем случайные 8 элементов
-        tasks = taskManager.getTasks();
-        tasks.addAll(taskManager.getEpics());
-        tasks.addAll(taskManager.getSubtasks());
-        for (int i = 0; i < 8; i++) {
-            Task task = tasks.get(new Random().nextInt(tasks.size() - 1));
-            System.out.println("Удаляем " + task.getClass().toString() + " id = " + task.getId());
-            if (task instanceof Epic) {
-                taskManager.deleteEpic(task.getId());
-            } else if (task instanceof Subtask) {
-                taskManager.deleteSubtask(task.getId());
-            } else {
-                taskManager.deleteTask(task.getId());
-            }
-        }
-
-        // Проверяем работоспособность методов обновления
-        System.out.println("");
-        System.out.println("Проверка обновления записей:");
-        //обновляем наименование и описание случайных элементов
-        tasks = taskManager.getTasks();
-        tasks.addAll(taskManager.getEpics());
-        tasks.addAll(taskManager.getSubtasks());
-        for (int i = 0; i < 8; i++) {
-            Task task = tasks.get(new Random().nextInt(tasks.size() - 1));
-            if (task instanceof Epic) {
-                System.out.println("Обновляем " + task.getClass().toString() + " id = " + task.getId());
-                Epic epic = new Epic(task.getName() + " (upd)", task.getDiscription() + " ОБНОВЛЕНО", task.getStatus(), task.getId());
-                taskManager.updateEpic(epic);
-            } else if (task instanceof Subtask) {
-
-            } else {
-                System.out.println("Обновляем " + task.getClass().toString() + " id = " + task.getId());
-                Task updtask = new Task(task.getName() + " (upd)", task.getDiscription() + " ОБНОВЛЕНО", TaskStatus.DONE, task.getId());
-                taskManager.updateTask(updtask);
-            }
-        }
-
-        System.out.println("");
-        System.out.println("Вывод результатов");
-        System.out.println(taskManager);
-        System.out.println("");
-
-        System.out.println("");
-        System.out.println("Проверка что история не изменилась. Удаление/обновление не должны обновлят историю:");
-        System.out.println("История:");
-        history = taskManager.getHistory();
-        for (int i = 0; i < history.size(); i++) {
-            System.out.println((i + 1) + " - " + history.get(i).toString());
-        }
-
     }
 }

@@ -24,6 +24,7 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
+    @Override
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
                 "status='" + this.getStatus().toString() + '\'' + // поле1=значение1
@@ -32,5 +33,28 @@ public class Subtask extends Task {
                 ", description=" + this.getDiscription() + // поле3=значение3
                 ", epicId=" + this.epicId + // поле3=значение3
                 '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash += epicId.hashCode();
+        return hash * 31;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Subtask subtask = (Subtask) o;
+
+        //Если основные поля не совпадут, сравнение можно не продолжать
+        if (!super.equals(subtask)) {
+            return false;
+        }
+
+        //Если ранее все было идентично, итоговый результат определится равенством перечней подзадач
+        return this.epicId.equals(subtask.epicId);
     }
 }
