@@ -26,7 +26,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (task == null) {
             return null;
         }
-        if (getTask(task.getId(), false) != null) {
+        if (getTaskAnonymously(task.getId()) != null) {
             //если пытаемся добавить объект идентификатор которого уже имеется в хранилище
             return null;
         }
@@ -44,7 +44,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic == null) {
             return null;
         }
-        if (getEpic(epic.getId(), false) != null) {
+        if (getEpicAnonymously(epic.getId()) != null) {
             //если пытаемся добавить объект идентификатор которого уже имеется в хранилище
             return null;
         }
@@ -63,7 +63,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (subtask == null) {
             return null;
         }
-        if (getSubtask(subtask.getId(), false) != null) {
+        if (getSubtaskAnonymously(subtask.getId()) != null) {
             //если пытаемся добавить объект идентификатор которого уже имеется в хранилище
             return null;
         }
@@ -71,7 +71,7 @@ public class InMemoryTaskManager implements TaskManager {
         //общая обработка добавления
         subtask.setID(generateID());
         subtasks.put(subtask.getId(), subtask);
-        updateEpicFromSubtasksInfo(getEpic(subtask.getEpicId(), false)); //обновление эпика, связанное с добавлением подзадачи
+        updateEpicFromSubtasksInfo(getEpicAnonymously(subtask.getEpicId())); //обновление эпика, связанное с добавлением подзадачи
 
         return subtask;
     }
@@ -82,7 +82,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (task == null) {
             return null;
         }
-        if (getTask(task.getId(), false) == null) {
+        if (getTaskAnonymously(task.getId()) == null) {
             //если пытаемся обновить объект, идентификатора которого нет в хранилище
             return null; // выходим
         }
@@ -101,7 +101,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic == null) {
             return null;
         }
-        if (getEpic(epic.getId(), false) == null) {
+        if (getEpicAnonymously(epic.getId()) == null) {
             //если пытаемся обновить объект, идентификатора которого нет в хранилище
             return null; // выходим
         }
@@ -121,14 +121,14 @@ public class InMemoryTaskManager implements TaskManager {
         if (subtask == null) {
             return null;
         }
-        if (getSubtask(subtask.getId(), false) == null) {
+        if (getSubtaskAnonymously(subtask.getId()) == null) {
             //если пытаемся обновить объект, идентификатора которого нет в хранилище
             return null; // выходим
         }
 
         if (subtasks.containsKey(subtask.getId())) {
             subtasks.replace(subtask.getId(), subtask);
-            updateEpicFromSubtasksInfo(getEpic(subtask.getEpicId(), false)); //обновление эпика, связанное с обновлением подзадачи
+            updateEpicFromSubtasksInfo(getEpicAnonymously(subtask.getEpicId())); //обновление эпика, связанное с обновлением подзадачи
             return subtask;
         }
         return null;
@@ -144,7 +144,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public boolean deleteTask(Integer id) {
         //Проверяем, что идентификатор указывает на реальный объект
-        Task task = getTask(id, false);
+        Task task = getTaskAnonymously(id);
         if ((task == null) || (!tasks.containsKey(id))) {
             return false;
         }
@@ -159,7 +159,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public boolean deleteSubtask(Integer id) {
         //Проверяем, что идентификатор указывает на реальный объект
-        Subtask subtask = getSubtask(id, false);
+        Subtask subtask = getSubtaskAnonymously(id);
         if ((subtask == null) || (!subtasks.containsKey(id))) {
             return false;
         }
@@ -168,7 +168,7 @@ public class InMemoryTaskManager implements TaskManager {
         historyManager.remove(id); //удаляем подзадачу из истории
 
         //Удаляем идентификатор подзадачи из списка подзадач эпика
-        updateEpicFromSubtasksInfo(getEpic(subtask.getEpicId(), false));
+        updateEpicFromSubtasksInfo(getEpicAnonymously(subtask.getEpicId()));
 
         return true;
     }
@@ -177,7 +177,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public boolean deleteEpic(Integer id) {
         //Проверяем, что идентификатор указывает на реальный объект
-        Epic epic = getEpic(id, false);
+        Epic epic = getEpicAnonymously(id);
         if ((epic == null) || (!epics.containsKey(id))) {
             return false;
         }
@@ -213,7 +213,7 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.clear();
     }
 
-    // Удаление всех подзадач
+    // Удаление всех задач, эпиков, подзадач
     @Override
     public void clearAll() {
         clearTasks();
@@ -224,49 +224,40 @@ public class InMemoryTaskManager implements TaskManager {
     // Получить задачу (Task) из хранилища по идентификатору
     @Override
     public Task getTask(Integer id) {
-        return getTask(id, true);
+        Task result = getTaskAnonymously(id);
+        historyManager.add(result);
+        return result;
     }
 
-    // Получить задачу (Task) из хранилища по идентификатору
-    // Опционально внести запись в историю просмотров (может быть отключена для служебных запросов)
-    public Task getTask(Integer id, boolean useHistory) {
-        Task result = tasks.getOrDefault(id, null);
-        if (result != null && useHistory) {
-            historyManager.add(result);
-        }
-        return result;
+    // Получить задачу (Task) из хранилища по идентификатору  без внесения в историю
+    public Task getTaskAnonymously(Integer id) {
+        return tasks.get(id);
     }
 
     // Плучить эпик (Epic) из хранилища по идентификатору
     @Override
     public Epic getEpic(Integer id) {
-        return getEpic(id, true);
+        Epic result = getEpicAnonymously(id);
+        historyManager.add(result);
+        return result;
     }
 
-    // Получить эпик (Epic) из хранилища по идентификатору
-    // Опционально внести запись в историю просмотров (может быть отключена для служебных запросов)
-    public Epic getEpic(Integer id, boolean useHistory) {
-        Epic result = epics.getOrDefault(id, null);
-        if (result != null && useHistory) {
-            historyManager.add(result);
-        }
-        return result;
+    // Получить эпик (Epic) из хранилища по идентификатору без внесения в историю
+    public Epic getEpicAnonymously(Integer id) {
+        return epics.get(id);
     }
 
     // Получить подзадачу (Subtask) из хранилища по идентификатору
     @Override
     public Subtask getSubtask(Integer id) {
-        return getSubtask(id, true);
+        Subtask result = getSubtaskAnonymously(id);
+        historyManager.add(result);
+        return result;
     }
 
-    // Получить подзадачу (Subtask) из хранилища по идентификатору
-    // Опционально внести запись в историю просмотров (может быть отключена для служебных запросов)
-    public Subtask getSubtask(Integer id, boolean useHistory) {
-        Subtask result = subtasks.getOrDefault(id, null);
-        if (result != null && useHistory) {
-            historyManager.add(result);
-        }
-        return result;
+    // Получить подзадачу (Subtask) из хранилища по идентификатору без внесения в историю
+    public Subtask getSubtaskAnonymously(Integer id) {
+        return subtasks.get(id);
     }
 
     // Получить список задач
@@ -293,7 +284,7 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
-    //Служебный метод. получить сабтаски по списку идентификаторов
+    //Служебный метод. Получить сабтаски по списку идентификаторов
     //upd ТЗ-4. Результаты вызова метода не заносятся в историю просмотров задач
     private ArrayList<Subtask> getSubtasks(ArrayList<Integer> ids) {
         ArrayList<Subtask> result = new ArrayList<>();
@@ -314,7 +305,7 @@ public class InMemoryTaskManager implements TaskManager {
     // Служебный метод. Обновление эпика, перечня связанных подзадач, статуса
     private void updateEpicFromSubtasksInfo(Epic epic) {
         if (epic == null) {
-            //работаем только с задачами класса Epic
+            //работаем только с ненулевыми
             return;
         }
 

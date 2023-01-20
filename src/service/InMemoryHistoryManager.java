@@ -14,8 +14,12 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
+        if (task==null) {
+            //при попытке добавить пустую задачу выходим
+            return;
+        }
         remove(task.getId()); //удаляем из истории задачи по идентификатору для исключения повторов
-        nodes.put(task.getId(), linkLast(task));
+        nodes.put(task.getId(), linkLast(task)); // добавляем задачу в связный список и хешмапу (ускорение поиска)
     }
 
     @Override
@@ -43,14 +47,13 @@ public class InMemoryHistoryManager implements HistoryManager {
 
         //если удаляется не крайний элемент
         if ((node != head) && (node != tail)) {
-            //в остальных случаях выполняем взаимную перепривязку предыдущих и следующих элементов
+            //выполняем взаимную перепривязку предыдущих и следующих элементов
             node.prev.next = node.next;
             node.next.prev = node.prev;
         }
 
         //если удаляется head
         if (head == node) {
-            //System.out.println("удаляется head node.id="+node.task.getId();
             head = node.prev;
             if (head != null) {
                 head.next = null;
@@ -58,7 +61,6 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
         //если удаляется tail
         if (tail == node) {
-            // System.out.println("удаляется tail node.id="+node.task.getId();
             tail = node.next;
             if (tail != null) {
                 tail.prev = null;
@@ -70,18 +72,23 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     public Node linkLast(Task task) {
         Node node = new Node(task);
+
         if (isEmpty()) {
+            //если добавляется узел в пустой набор, он станет и хвостовым (и головным - далее)
             tail = node;
         } else {
+            //если добавляется узел не первый, он устанавливает связи с головным, чтобы далее занять его место
             head.next = node;
             node.prev = head;
         }
-        head = node;
+        head = node; //вновь добавленный узел всегда становится головным
         return node;
     }
 
     public List<Task> getTasks() {
         ArrayList<Task> result = new ArrayList<>();
+
+        //Обходим дерево через поле next, собираем задачи в ArrayList
         if (!isEmpty()) {
             Node node = this.tail;
             while (node != null) {
