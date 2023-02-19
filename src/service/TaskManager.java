@@ -36,6 +36,11 @@ public interface TaskManager {
     // Удаление эпика
     boolean deleteEpic(Integer id);
 
+    // Импорт задач без генерации идентификатора
+    Task importTask (Task task);
+    Task importEpic (Epic epic);
+    Task importSubtask (Subtask subtask);
+
     // Очистка всех задач
     void clearTasks();
 

@@ -39,6 +39,13 @@ public class InMemoryHistoryManager implements HistoryManager {
         return getTasks();
     }
 
+    @Override
+    public void clear() {
+        head = null;
+        tail = null;
+        nodes.clear();
+    }
+
     public boolean removeNode(Node node) {
         if (node == null) {
             //пустой элемент удалять нельзя
@@ -144,5 +151,18 @@ public class InMemoryHistoryManager implements HistoryManager {
                     '}';
         }
     }
-
+    @Override
+    public String toString() {
+        String result = this.getClass().toString()+": [";
+            Node node = this.tail;
+            while (node!=null) {
+                result += node.task.getId();
+                if (node!=this.head) {
+                    result += ",";
+                }
+                node = node.next;
+            }
+        result += "]";
+        return result;
+    }
 }
