@@ -3,13 +3,16 @@ package service;
 import model.*;
 
 import java.io.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
 
     static final String BOM_MARKER = "\ufeff"; //для корректности открытия файла в ином ПО (EXCEL..)
-    static final String FILE_HEADER = BOM_MARKER + "id,type,name,status,description,epic";
+    static final String FILE_HEADER = BOM_MARKER + "id,type,name,status,description,epic,startTime,duration";
     static final String LINE_SEPARATOR = System.getProperty("line.separator");
     static final String CSV_DELIMITER = ",";
 
@@ -20,14 +23,20 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         FileBackedTasksManager taskManager = new FileBackedTasksManager(file);
         //1. Заведите несколько разных задач, эпиков и подзадач
         Task task1 = new Task("Задача 1", "Описание задачи 1");
+        task1.setStartTime(LocalDateTime.now());
+        task1.setDuration(Duration.ofHours(2));
         taskManager.appendTask(task1);
         Task task2 = new Task("Задача 2", "Описание задачи 2");
         taskManager.appendTask(task2);
         Epic epic1 = new Epic("Эпик 1", "Описание эпика 1");
         taskManager.appendEpic(epic1);
         Subtask subtask1 = new Subtask(epic1, "Подзадача 1", "Описание подзадачи 1 эпика 1 \"Зачётная\",\"Классная\"");
+        subtask1.setStartTime(LocalDateTime.now().minus(Duration.ofHours(1)));
+        subtask1.setDuration(Duration.ofHours(2));
         taskManager.appendSubtask(subtask1);
         Subtask subtask2 = new Subtask(epic1, "Подзадача 2", "Описание подзадачи 2 эпика 1");
+        subtask2.setStartTime(LocalDateTime.now().minus(Duration.ofMinutes(10)));
+        subtask2.setDuration(Duration.ofHours(2));
         taskManager.appendSubtask(subtask2);
         Epic epic2 = new Epic("Эпик 2", "Описание эпика 2");
         taskManager.appendEpic(epic2);
@@ -79,6 +88,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     for (Integer id : ids) {
                         fileBackedTasksManager.historyManager.add(fileBackedTasksManager.getById(id));
                     }
+                    break;
 
                 } else {
                     //Выполняем заполнение задачей из строки
@@ -156,6 +166,15 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         taskFields.add(twinQuotes(task.getDiscription()));
         if (task.getClass() == Subtask.class) {
             taskFields.add(((Subtask) task).getEpicId().toString());
+        } else {
+            taskFields.add("");
+        }
+        if (task.getClass() != Epic.class) {
+            taskFields.add((task.getStartTime()!=null?task.getStartTime().toString():""));
+            taskFields.add((task.getDuration()!=null?task.getDuration().toString():""));
+        } else {
+            taskFields.add("");
+            taskFields.add("");
         }
         return '"' + String.join("\"" + CSV_DELIMITER + "\"", taskFields) + '"';
     }
@@ -173,10 +192,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     private List<String> valuesFromCSVString(String CSVLine) {
-        //Предварительная обработка строки: убираем парные двойные кавычки ""->"
-        CSVLine = removeTwinQuotes(CSVLine);
-        //Отделяем ненужные кавычки в начале и в конце строки, разбиваем строку по запятой и кавычкам
-        String[] parts = CSVLine.substring(1, CSVLine.length() - 1).split("\"" + CSV_DELIMITER + "\"");
+        //Разбиваем строку по запятой
+        String[] parts = CSVLine.split(CSV_DELIMITER);
         //Склеиваем обратно строки, которые были разделены на предыдущем этапе, но
         //такое разделение было выполнено по разделителям "внутри" значения поля.
         //Признаком будет нечетное количество кавычек в конце части строки (остается после "лишнего" разделения).
@@ -184,26 +201,25 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         //Решение через регулярные выражения было слишком громоздким и трудночитаемым
         List<String> values = new ArrayList<>();
         StringBuilder fieldValue = new StringBuilder();
+
         for (String part : parts) {
+            part = part.substring(1, part.length() - 1);
             if (tailQuotesReps(part) % 2 == 0) {
                 //Четное количество кавычек или их отсутствие - признак правильного разделения
-                if (!fieldValue.toString().equals("")) {
-                    values.add(fieldValue.toString());
-                    fieldValue.setLength(0);
-                }
                 fieldValue.append(part);
+                values.add(removeTwinQuotes(fieldValue.toString()));
+                fieldValue.setLength(0);
             } else {
                 //Нечетное количество кавычек. Присоединяем этот кусок строки, через
                 //удаленный на предыдщуем этапе разделитель
+
+                fieldValue.append(part);
                 fieldValue.append("\"");
                 fieldValue.append(CSV_DELIMITER);
                 fieldValue.append("\"");
-                fieldValue.append(part);
             }
         }
-        if (!fieldValue.toString().equals("")) {
-            values.add(fieldValue.toString());
-        }
+        values.add(fieldValue.toString());
         return values;
     }
 
@@ -212,16 +228,25 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         //Нормализуем строку, превращаем в набор значений для полей
         List<String> values = valuesFromCSVString(value);
 
-        //
         int id = Integer.parseInt(values.get(0));
         TaskTypes type = TaskTypes.valueOf(values.get(1));
         String name = values.get(2);
         TaskStatus status = TaskStatus.valueOf(values.get(3));
         String description = values.get(4);
+        LocalDateTime startTime = null;
+        if (!values.get(6).isEmpty()) {
+            startTime = LocalDateTime.parse(values.get(6));
+        }
+        Duration duration = null;
+        if (!values.get(7).isEmpty()) {
+            duration = Duration.parse(values.get(7));
+        }
 
         switch (type) {
             case TASK:
                 Task task = new Task(name, description, status, id);
+                task.setStartTime(startTime);
+                task.setDuration(duration);
                 super.importTask(task);
                 return task;
             case EPIC:
@@ -231,6 +256,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             case SUBTASK:
                 Epic parentEpic = super.getEpic(Integer.parseInt(values.get(5)));
                 Subtask subtask = new Subtask(parentEpic, name, description, status, id);
+                subtask.setStartTime(startTime);
+                subtask.setDuration(duration);
                 super.importSubtask(subtask);
                 return subtask;
         }

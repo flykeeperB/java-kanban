@@ -27,11 +27,8 @@ public class Subtask extends Task {
     @Override
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
-                "status='" + this.getStatus().toString() + '\'' + // поле1=значение1
-                ", id='" + this.getId() + '\'' + // поле1=значение1
-                ", name='" + this.getName() + '\'' + // поле2=значение2
-                ", description=" + this.getDiscription() + // поле3=значение3
-                ", epicId=" + this.epicId + // поле3=значение3
+                super.fieldsToString() +
+                ", epicId='" + this.epicId + '\'' + // поле3=значение3
                 '}';
     }
 

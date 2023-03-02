@@ -1,5 +1,7 @@
 package model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -7,6 +9,12 @@ public class Task {
     protected String name;
     protected String description;
     protected TaskStatus status;
+    protected Duration duration;
+    protected LocalDateTime startTime;
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
 
     public Task(String name, String discription) {
         this.setName(name);
@@ -53,13 +61,34 @@ public class Task {
         this.status = status;
     }
 
+    public LocalDateTime getEndTime() {
+        return startTime==null?null:startTime.plus(duration);
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    protected String fieldsToString() {
+        return  "status='" + status.toString() + '\'' + // поле1=значение1
+                ", id='" + id + '\'' + // поле1=значение1
+                ", name='" + name + '\'' + // поле2=значение2
+                ", description='" + description + '\'' + // поле3=значение3
+                (startTime!=null?(", startTime='" + startTime + '\''):"")+
+                (duration!=null?(", duration='" + duration + '\''):"");
+    }
     @Override
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
-                "status='" + status.toString() + '\'' + // поле1=значение1
-                ", id='" + id + '\'' + // поле1=значение1
-                ", name='" + name + '\'' + // поле2=значение2
-                ", description=" + description + // поле3=значение3
+                fieldsToString()+
                 '}';
     }
 
@@ -68,11 +97,15 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return id == task.id && Objects.equals(name, task.name) && Objects.equals(description, task.description) && status == task.status;
+        return id == task.id && Objects.equals(name, task.name) &&
+                Objects.equals(description, task.description) &&
+                status == task.status &&
+                startTime.equals(task.getStartTime()) &&
+                duration.equals(task.getDuration());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, status);
+        return Objects.hash(id, name, description, status, startTime, duration);
     }
 }
