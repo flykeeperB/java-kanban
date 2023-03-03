@@ -12,6 +12,8 @@ public class InMemoryHistoryManager implements HistoryManager {
     private Node head;
     private Node tail;
 
+    //newstyle
+
     @Override
     public void add(Task task) {
         if (task==null) {
