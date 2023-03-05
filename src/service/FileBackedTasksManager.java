@@ -21,9 +21,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     public static void main(String[] args) {
         File file = new File("kanban.csv");
         FileBackedTasksManager taskManager = new FileBackedTasksManager(file);
+        taskManager.appendValidator(new TimeIntersectionsValidator());
         //1. Заведите несколько разных задач, эпиков и подзадач
         Task task1 = new Task("Задача 1", "Описание задачи 1");
-        task1.setStartTime(LocalDateTime.now());
+        task1.setStartTime(LocalDateTime.now().plus(Duration.ofHours(10)));
         task1.setDuration(Duration.ofHours(2));
         taskManager.appendTask(task1);
         Task task2 = new Task("Задача 2", "Описание задачи 2");
@@ -32,11 +33,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         taskManager.appendEpic(epic1);
         Subtask subtask1 = new Subtask(epic1, "Подзадача 1", "Описание подзадачи 1 эпика 1 \"Зачётная\",\"Классная\"");
         subtask1.setStartTime(LocalDateTime.now().minus(Duration.ofHours(1)));
-        subtask1.setDuration(Duration.ofHours(2));
+        subtask1.setDuration(Duration.ofMinutes(30));
         taskManager.appendSubtask(subtask1);
         Subtask subtask2 = new Subtask(epic1, "Подзадача 2", "Описание подзадачи 2 эпика 1");
         subtask2.setStartTime(LocalDateTime.now().minus(Duration.ofMinutes(10)));
-        subtask2.setDuration(Duration.ofHours(2));
+        subtask2.setDuration(Duration.ofHours(1));
         taskManager.appendSubtask(subtask2);
         Epic epic2 = new Epic("Эпик 2", "Описание эпика 2");
         taskManager.appendEpic(epic2);
