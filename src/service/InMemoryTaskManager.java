@@ -171,7 +171,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         subtasks.put(subtask.getId(), subtask);
         prioritizedTasks.add(subtask);
-        updateEpicFromSubtasksInfo(getEpic(subtask.getEpicId())); //обновление эпика, связанное с добавлением подзадачи
+        updateEpicFromSubtasksInfo(epics.get(subtask.getEpicId())); //обновление эпика, связанное с добавлением подзадачи
         onAddTask (subtask);
 
         return subtask;
@@ -186,7 +186,7 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.put(subtask.getId(), subtask);
         prioritizedTasks.add(subtask);
         updateNewIdOnImport(subtask);
-        updateEpicFromSubtasksInfo(getEpicAnonimusly(subtask.getEpicId()));
+        updateEpicFromSubtasksInfo(epics.get(subtask.getEpicId()));
         onAddTask (subtask);
 
         return subtask;
@@ -208,7 +208,7 @@ public class InMemoryTaskManager implements TaskManager {
 
         //замена таска в хранилище на обновленный
         if (tasks.containsKey(task.getId())) {
-            prioritizedTasks.remove(getTask(task.getId()));
+            prioritizedTasks.remove(tasks.get(task.getId()));
             tasks.replace(task.getId(), task);
             prioritizedTasks.add(task);
             onUpdateTask (task);
@@ -256,7 +256,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
 
         if (subtasks.containsKey(subtask.getId())) {
-            prioritizedTasks.remove(getSubtask(subtask.getId()));
+            prioritizedTasks.remove(subtasks.get(subtask.getId()));
             subtasks.replace(subtask.getId(), subtask);
             prioritizedTasks.add(subtask);
             updateEpicFromSubtasksInfo(epics.get(subtask.getEpicId())); //обновление эпика, связанное с обновлением подзадачи
@@ -281,7 +281,7 @@ public class InMemoryTaskManager implements TaskManager {
             return false;
         }
 
-        prioritizedTasks.remove(getTask(id));
+        prioritizedTasks.remove(tasks.get(id));
         tasks.remove(id);
         historyManager.remove(id); //удаляем задачу из истории
         onRemoveTask(task);
@@ -298,13 +298,13 @@ public class InMemoryTaskManager implements TaskManager {
             return false;
         }
 
-        prioritizedTasks.remove(getSubtask(id));
+        prioritizedTasks.remove(subtasks.get(id));
         subtasks.remove(id);
         historyManager.remove(id); //удаляем подзадачу из истории
         onRemoveTask(subtask);
 
         //Удаляем идентификатор подзадачи из списка подзадач эпика
-        updateEpicFromSubtasksInfo(getEpic(subtask.getEpicId()));
+        updateEpicFromSubtasksInfo(epics.get(subtask.getEpicId()));
 
         return true;
     }

@@ -932,7 +932,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void epicTimes() {
         final int SUBTASK_COUNT = 2;
-        final Duration subtaskDuration = Duration.ofHours(1);
+        final Duration SUBTASK_DURATION = Duration.ofHours(1);
         List<Subtask> subtasks;
 
         //Генерируем эпик для теста
@@ -942,10 +942,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
         //Проверяем время начала эпика при отсутствии сабтасков (null)
         assertNull(epic.getStartTime(), "Время начала эпика не null");
 
-        //Генерируем сабтаски для теста
+        //Генерируем сабтаски для теста, заполняем время проведения
         subtasks = generateSubtasksForTest("epicTimes", epic, SUBTASK_COUNT);
         LocalDateTime startTime = LocalDateTime.of(2023, 3, 6, 18, 20);
-        Duration duration = subtaskDuration;
+        Duration duration = SUBTASK_DURATION;
         for (Subtask subtask : subtasks) {
             subtask.setStartTime(startTime);
             startTime = startTime.plus(duration);
