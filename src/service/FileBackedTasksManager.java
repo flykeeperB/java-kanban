@@ -6,22 +6,19 @@ import java.io.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
-
     static final String BOM_MARKER = "\ufeff"; //для корректности открытия файла в ином ПО (EXCEL..)
     static final String FILE_HEADER = BOM_MARKER + "id,type,name,status,description,epic,startTime,duration";
     static final String LINE_SEPARATOR = System.getProperty("line.separator");
     static final String CSV_DELIMITER = ",";
-
     final private File file;
 
     public static void main(String[] args) {
         File file = new File("kanban.csv");
         FileBackedTasksManager taskManager = new FileBackedTasksManager(file);
-        taskManager.appendValidator(new TimeIntersectionsValidator());
+
         //1. Заведите несколько разных задач, эпиков и подзадач
         Task task1 = new Task("Задача 1", "Описание задачи 1");
         task1.setStartTime(LocalDateTime.now().plus(Duration.ofHours(10)));
@@ -70,7 +67,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         this.file = file;
     }
 
-    static FileBackedTasksManager loadFromFile(File file) {
+    public static FileBackedTasksManager loadFromFile(File file) {
         FileBackedTasksManager fileBackedTasksManager = new FileBackedTasksManager(file);
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file))) {
             while (fileReader.ready()) {
@@ -82,12 +79,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 if (line.isEmpty()) {
                     //Пустая строка указывает на начало записи истории
                     line = fileReader.readLine();
+                    if (!line.isEmpty()) {
+                        //Загрузка истории
+                        fileBackedTasksManager.historyManager.clear();
 
-                    //Загрузка истории
-                    fileBackedTasksManager.historyManager.clear();
-                    List<Integer> ids = historyFromString(line);
-                    for (Integer id : ids) {
-                        fileBackedTasksManager.historyManager.add(fileBackedTasksManager.getById(id));
+                        List<Integer> ids = historyFromString(line);
+                        for (Integer id : ids) {
+                            fileBackedTasksManager.historyManager.add(fileBackedTasksManager.getById(id));
+                        }
                     }
                     break;
 
@@ -107,19 +106,23 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         //Собираем в общий список задачи/эпики/подзадачи
         List<Task> tasks = this.getTasks();
-        fileContent.append(LINE_SEPARATOR);
         tasks.addAll(this.getEpics());
         tasks.addAll(this.getSubtasks());
 
         //Подготавливаем содержимое файла
         for (Task task : tasks) {
-            fileContent.append(FileBackedTasksManager.toString(task));
             fileContent.append(LINE_SEPARATOR);
+            fileContent.append(FileBackedTasksManager.toString(task));
         }
 
         //Подготавливаем историю к записи
-        fileContent.append(LINE_SEPARATOR);
-        fileContent.append(FileBackedTasksManager.historyToString(this.historyManager));
+        String stringHistory = FileBackedTasksManager.historyToString(this.historyManager);
+
+        if (!stringHistory.isEmpty()) {
+            fileContent.append(LINE_SEPARATOR);
+            fileContent.append(LINE_SEPARATOR);
+            fileContent.append(stringHistory);
+        }
 
         //Пишем файл
         try (Writer fileWriter = new FileWriter(file)) {
@@ -139,6 +142,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     static List<Integer> historyFromString(String value) {
+        if (value==null) {
+            return new ArrayList<>();
+        }
         String[] parts = value.split(CSV_DELIMITER);
         List<Integer> ids = new ArrayList<>();
         for (String part : parts) {
@@ -255,7 +261,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 super.importEpic(epic);
                 return epic;
             case SUBTASK:
-                Epic parentEpic = super.getEpic(Integer.parseInt(values.get(5)));
+                Epic parentEpic = super.getEpicAnonimusly(Integer.parseInt(values.get(5)));
                 Subtask subtask = new Subtask(parentEpic, name, description, status, id);
                 subtask.setStartTime(startTime);
                 subtask.setDuration(duration);

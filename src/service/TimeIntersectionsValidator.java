@@ -18,7 +18,7 @@ import java.util.List;
 //-----------------------------------------------------------------------------------------------------------
 
 public class TimeIntersectionsValidator implements TaskValidator {
-    final private Duration TIMECHUNK_DURATION = Duration.ofMinutes(10); //Продолжительность чанка
+    final private Duration TIMECHUNK_DURATION = Duration.ofMinutes(5); //Продолжительность чанка
     final private HashMap<LocalDateTime,Task> timeChunks = new HashMap<>(); //Хранилище чанков
     final private HashMap<Integer,List<LocalDateTime>> timeChunksByTaskId = new HashMap<>(); //Храним чанки конкретных задач
 
@@ -31,6 +31,7 @@ public class TimeIntersectionsValidator implements TaskValidator {
         if (task.getDuration()!=null) {
             endTime = task.getEndTime();
         }
+        endTime = endTime;
 
         while (chunk.isBefore(endTime)) {
             chunks.add(chunk);
@@ -111,12 +112,15 @@ public class TimeIntersectionsValidator implements TaskValidator {
         //Проверяем наличие пересечений чанков с уже занятыми
         for (LocalDateTime chunk : chunks) {
             if (timeChunks.containsKey(chunk)) {
-                throw new ManagerSaveException("Task "+task
-                        + ") not valid /n,"
-                        + "chunks ["+chunks+']'
-                        +" has intersections with "
-                        + timeChunks.get(chunk)+"/n"
-                        + "chunks ["+calculateChunksForTask(timeChunks.get(chunk))+"]");
+                Task intersectionTask = timeChunks.get(chunk);
+                throw new TaskValidatorException(task.getClass().getSimpleName()
+                        +" id="+task.getId()+" startTime="+task.getStartTime()
+                        +" duration="+task.getDuration()+"\n"
+                        +" имеет пересечения c "
+                        +intersectionTask.getClass().getSimpleName()
+                        +" startTime="+intersectionTask.getStartTime()
+                        +" duration="+intersectionTask.getDuration()+"\n"
+                        + "chunk - ["+chunks+']');
             }
         }
     }

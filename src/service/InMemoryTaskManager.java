@@ -37,13 +37,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     private boolean validateTask (Task task) {
         for (TaskValidator validator : validators) {
-            try {
+            validator.validate(this,task);
+            /*try {
                 validator.validate(this,task);
             } catch (TaskValidatorException e) {
                 System.out.println(e.getMessage());
                 return false;
-            }
-            continue;
+            }*/
         }
         return true;
     }
@@ -75,6 +75,7 @@ public class InMemoryTaskManager implements TaskManager {
         epics = new HashMap<>();
         subtasks = new HashMap<>();
         validators = new ArrayList<>();
+        appendValidator(new TimeIntersectionsValidator());
         historyManager = Managers.getDefaultHistory();
     }
 
@@ -185,7 +186,7 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.put(subtask.getId(), subtask);
         prioritizedTasks.add(subtask);
         updateNewIdOnImport(subtask);
-        updateEpicFromSubtasksInfo(getEpic(subtask.getEpicId()));
+        updateEpicFromSubtasksInfo(getEpicAnonimusly(subtask.getEpicId()));
         onAddTask (subtask);
 
         return subtask;
@@ -344,7 +345,6 @@ public class InMemoryTaskManager implements TaskManager {
         clearSubtasks(); //удаляем подзадачи, т.к. они не могут существовать без эпиков
         onRemoveTasks(new ArrayList<>(epics.values()));
         epics.clear();
-
     }
 
     // Удаление всех подзадач
@@ -375,6 +375,12 @@ public class InMemoryTaskManager implements TaskManager {
     public Epic getEpic(Integer id) {
         Epic result = epics.get(id);
         historyManager.add(result);
+        return result;
+    }
+
+    //Служебный метод получения эпика (Epic) из хранилища по идентификатору без внесения в историю
+    protected Epic getEpicAnonimusly(Integer id) {
+        Epic result = epics.get(id);
         return result;
     }
 
@@ -500,7 +506,7 @@ public class InMemoryTaskManager implements TaskManager {
             return;
         }
 
-        //Обновляем статус
+        //Параметры по умолчанию
         epic.setStatus(TaskStatus.NEW); //По умолчанию статус NEW
         epic.setStartTime(null);
         epic.setEndTime(null);

@@ -1,0 +1,6 @@
+﻿id,type,name,status,description,epic,startTime,duration
+"1","TASK","1. Task. Test importTask","NEW","1. Task. Test importTask description","","",""
+"2","TASK","2. Task. Test importTask","NEW","2. Task. Test importTask description","","",""
+"3","TASK","3. Task. Test importTask","NEW","3. Task. Test importTask description","","",""
+
+1,2,3
