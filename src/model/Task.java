@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
-    protected int id;
+    protected Integer id;
     protected String name;
     protected String description;
     protected TaskStatus status;
@@ -62,7 +62,7 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
-        return startTime==null?null:startTime.plus(duration);
+        return startTime == null ? null : startTime.plus(duration);
     }
 
     public Duration getDuration() {
@@ -78,17 +78,18 @@ public class Task {
     }
 
     protected String fieldsToString() {
-        return  "status='" + status.toString() + '\'' + // поле1=значение1
+        return "status='" + status.toString() + '\'' + // поле1=значение1
                 ", id='" + id + '\'' + // поле1=значение1
                 ", name='" + name + '\'' + // поле2=значение2
                 ", description='" + description + '\'' + // поле3=значение3
-                (startTime!=null?(", startTime='" + startTime + '\''):"")+
-                (duration!=null?(", duration='" + duration + '\''):"");
+                (startTime != null ? (", startTime='" + startTime + '\'') : "") +
+                (duration != null ? (", duration='" + duration + '\'') : "");
     }
+
     @Override
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
-                fieldsToString()+
+                fieldsToString() +
                 '}';
     }
 
@@ -97,15 +98,32 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return id == task.id && Objects.equals(name, task.name) &&
+        return Objects.equals(id, task.id)
+                && Objects.equals(name, task.name)
+                && Objects.equals(description, task.description)
+                && status == task.status && Objects.equals(duration, task.duration)
+                && Objects.equals(startTime, task.startTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, status, duration, startTime);
+    }
+
+    /*@Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return id.equals(task.id) && Objects.equals(name, task.name) &&
                 Objects.equals(description, task.description) &&
                 status == task.status &&
-                startTime.equals(task.getStartTime()) &&
-                duration.equals(task.getDuration());
+                startTime!=null?(startTime.equals(task.getStartTime())):(task.getStartTime()==null) &&
+                duration!=null?(duration.equals(task.getDuration())):(task.getDuration()==null);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name, description, status, startTime, duration);
-    }
+    }*/
 }

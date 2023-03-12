@@ -1,5 +1,6 @@
 package service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import model.*;
@@ -19,10 +20,10 @@ public interface TaskManager {
     Task updateTask(Task task);
 
     // Обновление записи эпика
-    Task updateEpic(Epic epic);
+    Epic updateEpic(Epic epic);
 
     // Обновление записи подзадачи
-    Task updateSubtask(Subtask subtask);
+    Subtask updateSubtask(Subtask subtask);
 
     // Удаление задачи/эпика/подзадачи по идентификатору
     boolean delete(Integer id);
@@ -70,7 +71,17 @@ public interface TaskManager {
 
     // Получить список подзадач
     List<Subtask> getSubtasks();
+    List<Subtask> getEpicSubtasks(Epic epic);
+    Epic getEpicOfSubtask(Subtask subtask);
 
     // Получить историю
     List<Task> getHistory();
+
+    //Получение списка задач/эпиков/подзадач
+    default List<Task> getAllTasks() {
+        List<Task> tasks = this.getTasks();
+        tasks.addAll(this.getEpics());
+        tasks.addAll(this.getSubtasks());
+        return tasks;
+    }
 }

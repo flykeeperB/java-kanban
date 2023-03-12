@@ -142,7 +142,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     static List<Integer> historyFromString(String value) {
-        if (value==null) {
+        if (value == null) {
             return new ArrayList<>();
         }
         String[] parts = value.split(CSV_DELIMITER);
@@ -177,8 +177,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             taskFields.add("");
         }
         if (task.getClass() != Epic.class) {
-            taskFields.add((task.getStartTime()!=null?task.getStartTime().toString():""));
-            taskFields.add((task.getDuration()!=null?task.getDuration().toString():""));
+            taskFields.add((task.getStartTime() != null ? task.getStartTime().toString() : ""));
+            taskFields.add((task.getDuration() != null ? task.getDuration().toString() : ""));
         } else {
             taskFields.add("");
             taskFields.add("");
@@ -273,7 +273,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task appendTask(Task task) {
+    public Task appendTask(Task task) throws TaskValidatorException {
         if (super.appendTask(task) != null) {
             save();
         }
@@ -281,7 +281,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Epic appendEpic(Epic epic) {
+    public Epic appendEpic(Epic epic) throws TaskValidatorException {
         if (super.appendEpic(epic) != null) {
             save();
         }
@@ -289,7 +289,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Subtask appendSubtask(Subtask subtask) {
+    public Subtask appendSubtask(Subtask subtask) throws TaskValidatorException {
         if (super.appendSubtask(subtask) != null) {
             save();
         }
@@ -297,7 +297,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task updateTask(Task task) {
+    public Task updateTask(Task task) throws TaskValidatorException {
         if (super.updateTask(task) != null) {
             save();
         }
@@ -305,7 +305,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task updateEpic(Epic epic) {
+    public Epic updateEpic(Epic epic) throws TaskValidatorException {
         if (super.updateEpic(epic) != null) {
             save();
         }
@@ -313,7 +313,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task updateSubtask(Subtask subtask) {
+    public Subtask updateSubtask(Subtask subtask) throws TaskValidatorException {
         if (super.updateSubtask(subtask) != null) {
             save();
         }

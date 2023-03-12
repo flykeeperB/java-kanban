@@ -19,16 +19,16 @@ import java.util.List;
 
 public class TimeIntersectionsValidator implements TaskValidator {
     final private Duration TIMECHUNK_DURATION = Duration.ofMinutes(5); //Продолжительность чанка
-    final private HashMap<LocalDateTime,Task> timeChunks = new HashMap<>(); //Хранилище чанков
-    final private HashMap<Integer,List<LocalDateTime>> timeChunksByTaskId = new HashMap<>(); //Храним чанки конкретных задач
+    final private HashMap<LocalDateTime, Task> timeChunks = new HashMap<>(); //Хранилище чанков
+    final private HashMap<Integer, List<LocalDateTime>> timeChunksByTaskId = new HashMap<>(); //Храним чанки конкретных задач
 
     //Рассчитываем перечень чанков, относящихся к задаче
-    private List<LocalDateTime> calculateChunksForTask (Task task) {
+    private List<LocalDateTime> calculateChunksForTask(Task task) {
         List<LocalDateTime> chunks = new ArrayList<>();
         LocalDateTime chunk = calculateChunkForMoment(task.getStartTime());
         LocalDateTime endTime = task.getStartTime();
 
-        if (task.getDuration()!=null) {
+        if (task.getDuration() != null) {
             endTime = task.getEndTime();
         }
         endTime = endTime;
@@ -40,8 +40,8 @@ public class TimeIntersectionsValidator implements TaskValidator {
         return chunks;
     }
 
-    private void removeTaskFromValidator (Task task) {
-        if (task.getClass()==Epic.class) {
+    private void removeTaskFromValidator(Task task) {
+        if (task.getClass() == Epic.class) {
             return; //Временные параметры эпика расчитываюься от сабтасков, поэтому его не обрабатываем
         }
         if (timeChunksByTaskId.containsKey(task.getId())) {
@@ -53,11 +53,11 @@ public class TimeIntersectionsValidator implements TaskValidator {
         }
     }
 
-    private void addTaskToValidator (Task task) {
-        if (task.getClass()==Epic.class) {
+    private void addTaskToValidator(Task task) {
+        if (task.getClass() == Epic.class) {
             return; //Временные параметры эпика расчитываюься от сабтасков, поэтому его не обрабатываем
         }
-        if (task.getStartTime()==null) {
+        if (task.getStartTime() == null) {
             return; //Если время не задано, нечего добавлять, задача не занимает чанков
         }
         //Удаляем ранее внесенные сведения за чанках задачи (при обновлении могут измениться)
@@ -68,11 +68,11 @@ public class TimeIntersectionsValidator implements TaskValidator {
 
         //Занимаем чанки
         for (LocalDateTime chunk : chunks) {
-            timeChunks.put(chunk,task);
+            timeChunks.put(chunk, task);
         }
 
         //Привязываем чанки к идентификатору задачи
-        timeChunksByTaskId.put(task.getId(),chunks);
+        timeChunksByTaskId.put(task.getId(), chunks);
     }
 
     @Override
@@ -81,55 +81,56 @@ public class TimeIntersectionsValidator implements TaskValidator {
     }
 
     @Override
-    public void onRemoveTask (Task task) {
+    public void onRemoveTask(Task task) {
         removeTaskFromValidator(task);
     }
 
     @Override
-    public void onRemoveTasks (List<Task> tasks) {
+    public void onRemoveTasks(List<Task> tasks) {
         for (Task task : tasks) {
             removeTaskFromValidator(task);
         }
     }
 
     @Override
-    public void validate (TaskManager manager, Task task) {
-        if (task.getStartTime()==null) {
+    public void validate(TaskManager manager, Task task) throws TaskValidatorException {
+        if (task.getStartTime() == null) {
             return; //задачи без времени валидны по умолчанию
         }
 
-        if (task.getClass()==Epic.class) {
+        if (task.getClass() == Epic.class) {
             return; //Временные параметры эпика расчитываюься от сабтасков, поэтому его не обрабатываем
         }
 
-        if (task.getStartTime()==null) {
+        if (task.getStartTime() == null) {
             return; //Если время не задано, задача валидна т.к. не имеет пересечений
         }
 
         //Составляем список чанков задачи
         List<LocalDateTime> chunks = calculateChunksForTask(task);
-
         //Проверяем наличие пересечений чанков с уже занятыми
         for (LocalDateTime chunk : chunks) {
             if (timeChunks.containsKey(chunk)) {
                 Task intersectionTask = timeChunks.get(chunk);
+
                 throw new TaskValidatorException(task.getClass().getSimpleName()
-                        +" id="+task.getId()+" startTime="+task.getStartTime()
-                        +" duration="+task.getDuration()+"\n"
-                        +" имеет пересечения c "
-                        +intersectionTask.getClass().getSimpleName()
-                        +" startTime="+intersectionTask.getStartTime()
-                        +" duration="+intersectionTask.getDuration()+"\n"
-                        + "chunk - ["+chunks+']');
+                        + " id=" + task.getId() + " startTime=" + task.getStartTime()
+                        + " duration=" + task.getDuration() + "\n"
+                        + " имеет пересечения c "
+                        + intersectionTask.getClass().getSimpleName()
+                        + " id=" + intersectionTask.getId()
+                        + " startTime=" + intersectionTask.getStartTime()
+                        + " duration=" + intersectionTask.getDuration() + "\n"
+                        + "chunk - [" + chunks + ']');
             }
         }
     }
 
-    private LocalDateTime calculateChunkForMoment (LocalDateTime moment) {
+    private LocalDateTime calculateChunkForMoment(LocalDateTime moment) {
         //Находим начало часа события
         LocalDateTime momentHour = moment.truncatedTo(ChronoUnit.HOURS);
         //Находим номер куска часа к которому относится событие исходя из заданных периодов кусков
-        long hourChunk = Duration.between(momentHour,moment).dividedBy(TIMECHUNK_DURATION);
+        long hourChunk = Duration.between(momentHour, moment).dividedBy(TIMECHUNK_DURATION);
         return momentHour.plus(TIMECHUNK_DURATION.multipliedBy(hourChunk));
     }
 

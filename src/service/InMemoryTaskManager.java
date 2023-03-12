@@ -11,10 +11,11 @@ public class InMemoryTaskManager implements TaskManager {
     HistoryManager historyManager;
     private int newId = 1; //Очередной идентификатор задачи
     private final List<TaskValidator> validators; //Хранилище валидаторов задач
-    TreeSet<Task> prioritizedTasks = new TreeSet<>((aTask, bTask)->{
-        if ((aTask.getStartTime()==null)&&(bTask.getStartTime()==null)) {
+
+    TreeSet<Task> prioritizedTasks = new TreeSet<>((aTask, bTask) -> {
+        if ((aTask.getStartTime() == null) && (bTask.getStartTime() == null)) {
             //Если у задач не определено время, сравниваем по id, чтобы не потерялись...
-            return aTask.getId()-bTask.getId();
+            return aTask.getId() - bTask.getId();
         }
         //Обрабатываем случаи, когда время одной из задач не определено
         if (aTask.getStartTime() == null) {
@@ -25,46 +26,40 @@ public class InMemoryTaskManager implements TaskManager {
         }
         //При одинаковом времени сортируем по id, чтобы не потерялись задачи
         if (aTask.getStartTime().equals(bTask.getStartTime())) {
-            return aTask.getId()-bTask.getId();
+            return aTask.getId() - bTask.getId();
         }
         //Во всех прочих случаях сравниваем по времени
-        return (aTask.getStartTime().isBefore(bTask.getStartTime())?-1:1);
+        return (aTask.getStartTime().isBefore(bTask.getStartTime()) ? -1 : 1);
     });
 
     public void appendValidator(TaskValidator validator) {
         validators.add(validator);
     }
 
-    private boolean validateTask (Task task) {
+    private boolean validateTask(Task task) throws TaskValidatorException {
         for (TaskValidator validator : validators) {
-            validator.validate(this,task);
-            /*try {
-                validator.validate(this,task);
-            } catch (TaskValidatorException e) {
-                System.out.println(e.getMessage());
-                return false;
-            }*/
+            validator.validate(this, task);
         }
         return true;
     }
 
-    private void onAddTask (Task task) {
+    private void onAddTask(Task task) {
         for (TaskValidator validator : validators) {
             validator.onAddTask(task);
         }
     }
 
-    private void onUpdateTask (Task task) {
+    private void onUpdateTask(Task task) {
         onAddTask(task);
     }
 
-    private void onRemoveTask (Task task) {
+    private void onRemoveTask(Task task) {
         for (TaskValidator validator : validators) {
             validator.onRemoveTask(task);
         }
     }
 
-    private void onRemoveTasks (List<Task> tasks) {
+    private void onRemoveTasks(List<Task> tasks) {
         for (TaskValidator validator : validators) {
             validator.onRemoveTasks(tasks);
         }
@@ -81,47 +76,50 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Создание (добавление) задачи
     @Override
-    public Task appendTask(Task task) {
+    public Task appendTask(Task task) throws TaskValidatorException {
         if (task == null) {
             return null;
         }
+
         if (tasks.get(task.getId()) != null) {
             //если пытаемся добавить объект идентификатор которого уже имеется в хранилище
             return null;
         }
 
-        task.setID(generateID());     //генерируем идентификатор
         if (!validateTask(task)) {
             return null;
         }
+
+        task.setID(generateID());     //генерируем идентификатор (почему до валидации?)
+
         tasks.put(task.getId(), task); //добавляем задачу в хранилище
         prioritizedTasks.add(task);
-        onAddTask (task);
+        onAddTask(task);
 
         return task;
     }
 
-    private void updateNewIdOnImport (Task task) {
+    private void updateNewIdOnImport(Task task) {
         if (this.newId <= task.getId()) {
-            newId = task.getId()+1;
+            newId = task.getId() + 1;
         }
     }
 
     @Override
-    public Task importTask (Task task) {
+    public Task importTask(Task task) {
         if (task.getId() < 1) {
             return null;
         }
         tasks.put(task.getId(), task);
         prioritizedTasks.add(task);
         updateNewIdOnImport(task);
-        onAddTask (task);
+        onAddTask(task);
         return task;
     }
 
     // Создание (добавление) эпика
     @Override
-    public Epic appendEpic(Epic epic) {
+    public Epic appendEpic(Epic epic) throws TaskValidatorException {
         if (epic == null) {
             return null;
         }
@@ -130,32 +128,34 @@ public class InMemoryTaskManager implements TaskManager {
             return null;
         }
 
-        //общая обработка добавления
-        epic.setID(generateID());
         if (!validateTask(epic)) {
             return null;
         }
+
+        //общая обработка добавления
+        epic.setID(generateID());
+
         epic.clearSubtaskIds(); //очищаем, т.к. подзадачи должны добавляться после добавления эпика в менеджер
         epics.put(epic.getId(), epic);
-        onAddTask (epic);
+        onAddTask(epic);
 
         return epic;
     }
 
     @Override
-    public Task importEpic (Epic epic) {
+    public Task importEpic(Epic epic) {
         if (epic.getId() < 1) {
             return null;
         }
         epics.put(epic.getId(), epic);
         updateNewIdOnImport(epic);
-        onAddTask (epic);
+        onAddTask(epic);
         return epic;
     }
 
     // Создание (добавление) подзадачи
     @Override
-    public Subtask appendSubtask(Subtask subtask) {
+    public Subtask appendSubtask(Subtask subtask) throws TaskValidatorException {
         if (subtask == null) {
             return null;
         }
@@ -172,13 +172,13 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.put(subtask.getId(), subtask);
         prioritizedTasks.add(subtask);
         updateEpicFromSubtasksInfo(epics.get(subtask.getEpicId())); //обновление эпика, связанное с добавлением подзадачи
-        onAddTask (subtask);
+        onAddTask(subtask);
 
         return subtask;
     }
 
     @Override
-    public Task importSubtask (Subtask subtask) {
+    public Task importSubtask(Subtask subtask) {
         if (subtask.getId() < 1) {
             return null;
         }
@@ -187,14 +187,14 @@ public class InMemoryTaskManager implements TaskManager {
         prioritizedTasks.add(subtask);
         updateNewIdOnImport(subtask);
         updateEpicFromSubtasksInfo(epics.get(subtask.getEpicId()));
-        onAddTask (subtask);
+        onAddTask(subtask);
 
         return subtask;
     }
 
     // Обновление записи задачи
     @Override
-    public Task updateTask(Task task) {
+    public Task updateTask(Task task) throws TaskValidatorException {
         if (task == null) {
             return null;
         }
@@ -211,7 +211,7 @@ public class InMemoryTaskManager implements TaskManager {
             prioritizedTasks.remove(tasks.get(task.getId()));
             tasks.replace(task.getId(), task);
             prioritizedTasks.add(task);
-            onUpdateTask (task);
+            onUpdateTask(task);
             return task;
         }
         return null;
@@ -219,7 +219,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Обновление записи эпика
     @Override
-    public Task updateEpic(Epic epic) {
+    public Epic updateEpic(Epic epic) throws TaskValidatorException {
         if (epic == null) {
             return null;
         }
@@ -235,7 +235,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epics.containsKey(epic.getId())) {
             epics.replace(epic.getId(), epic);
             updateEpicFromSubtasksInfo(epic);
-            onUpdateTask (epic);
+            onUpdateTask(epic);
             return epic;
         }
         return null;
@@ -243,7 +243,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Обновление записи подзадачи
     @Override
-    public Task updateSubtask(Subtask subtask) {
+    public Subtask updateSubtask(Subtask subtask) throws TaskValidatorException {
         if (subtask == null) {
             return null;
         }
@@ -360,6 +360,7 @@ public class InMemoryTaskManager implements TaskManager {
         clearTasks();
         clearEpics();
         clearSubtasks();
+        getHistoryManager().clear();
     }
 
     // Получить задачу (Task) из хранилища по идентификатору
@@ -384,6 +385,11 @@ public class InMemoryTaskManager implements TaskManager {
         return result;
     }
 
+    @Override
+    public Epic getEpicOfSubtask(Subtask subtask) {
+        return epics.get(subtask.getEpicId());
+    }
+
     // Получить подзадачу (Subtask) из хранилища по идентификатору
     @Override
     public Subtask getSubtask(Integer id) {
@@ -392,8 +398,8 @@ public class InMemoryTaskManager implements TaskManager {
         return result;
     }
 
-    public Task getById (Integer id) {
-        return (getTask(id)==null?(getEpic(id)==null?getSubtask(id):getEpic(id)):getTask(id));
+    public Task getById(Integer id) {
+        return (getTask(id) == null ? (getEpic(id) == null ? getSubtask(id) : getEpic(id)) : getTask(id));
     }
 
     // Получить список задач
@@ -412,6 +418,22 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public ArrayList<Subtask> getSubtasks() {
         return new ArrayList<>(subtasks.values());
+    }
+
+    @Override
+    public List<Subtask> getEpicSubtasks(Epic epic) {
+        if (epic == null) {
+            return null;
+        }
+        ArrayList<Subtask> result = new ArrayList<>();
+        List<Integer> subtaskIds = epic.getSubtaskIds();
+        for (Integer id : subtaskIds) {
+            Subtask subtask = subtasks.get(id);
+            if (subtask != null) {
+                result.add(subtask);
+            }
+        }
+        return result;
     }
 
     // Получить историю обращений к задачам/эпикам/подзадачам
@@ -445,23 +467,24 @@ public class InMemoryTaskManager implements TaskManager {
         return new ArrayList<>(prioritizedTasks);
     }
 
-    private boolean removeTaskByIdFromPrioritizedTasks (int taskId) {
+    private boolean removeTaskByIdFromPrioritizedTasks(int taskId) {
         Task target = null;
         for (Task prioritizedTask : prioritizedTasks) {
-            if (prioritizedTask.getId()==taskId) {
+            if (prioritizedTask.getId() == taskId) {
                 target = prioritizedTask;
             }
         }
-        if (target!=null) {
+        if (target != null) {
             prioritizedTasks.remove(target);
             return true;
         } else {
             return false;
         }
     }
-    private void updateEpicTimes(Epic epic,Subtask subtask) {
-        if (subtask.getStartTime()!=null) {
-            if (epic.getStartTime()==null) {
+
+    private void updateEpicTimes(Epic epic, Subtask subtask) {
+        if (subtask.getStartTime() != null) {
+            if (epic.getStartTime() == null) {
                 epic.setStartTime(subtask.getStartTime());
             } else {
                 if (subtask.getStartTime().isBefore(epic.getStartTime())) {
@@ -469,8 +492,8 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
         }
-        if (subtask.getEndTime()!=null) {
-            if (epic.getEndTime()==null) {
+        if (subtask.getEndTime() != null) {
+            if (epic.getEndTime() == null) {
                 epic.setEndTime(subtask.getEndTime());
             } else {
                 if (subtask.getEndTime().isAfter(epic.getEndTime())) {
@@ -478,8 +501,8 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
         }
-        if (subtask.getDuration()!=null) {
-            if (epic.getDuration()==null) {
+        if (subtask.getDuration() != null) {
+            if (epic.getDuration() == null) {
                 epic.setDuration(subtask.getDuration());
             } else {
                 epic.setDuration(epic.getDuration().plus(subtask.getDuration()));
@@ -492,7 +515,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (isFirstIteration) {
             //Если это первая итерация, присваиваем и идем дальше
             epic.setStatus(subtask.getStatus());
-        } else if ((epic.getStatus() != TaskStatus.IN_PROGRESS)&&
+        } else if ((epic.getStatus() != TaskStatus.IN_PROGRESS) &&
                 (epic.getStatus() != subtask.getStatus())) {
             //Если статус при обходе меняется, значит подзадачи разнородные
             epic.setStatus(TaskStatus.IN_PROGRESS);
@@ -518,7 +541,7 @@ public class InMemoryTaskManager implements TaskManager {
         ArrayList<Subtask> subtasks = getSubtasks();
         for (Subtask subtask : subtasks) {
             if (epic.getId().equals(subtask.getEpicId())) {
-                updateEpicTimes(epic,subtask);
+                updateEpicTimes(epic, subtask);
                 updateEpicStatus(epic, subtask, isFirstIteration);
                 isFirstIteration = false;
                 epic.addSubtaskIds(subtask.getId());
