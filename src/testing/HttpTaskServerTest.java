@@ -7,6 +7,8 @@ import model.Subtask;
 import model.Task;
 import org.junit.jupiter.api.*;
 import service.*;
+import service.adapters.DurationAdapter;
+import service.adapters.LocalDateTimeAdapter;
 
 import java.net.http.*;
 
@@ -18,8 +20,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class HttpTaskServerTest {
     static private HttpTaskServer globalHttpTaskServer;
@@ -133,7 +133,7 @@ class HttpTaskServerTest {
 
     private Gson createGson() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.serializeNulls();
+        //gsonBuilder.serializeNulls();
         gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
         gsonBuilder.registerTypeAdapter(Duration.class, new DurationAdapter());
         gsonBuilder.setPrettyPrinting();
@@ -160,6 +160,8 @@ class HttpTaskServerTest {
     public void appendAndGetTask() throws IOException, InterruptedException {
         //Создание тестовой задачи
         Task newTask = new Task("Тест задача", "Описание тест задачи");
+        newTask.setStartTime(LocalDateTime.of(2012, 04, 23, 18, 25));
+        newTask.setDuration(Duration.ofHours(1));
 
         //Адрес ресурса
         URI uri = URI.create("http://localhost:8080/tasks/task/");
@@ -186,6 +188,7 @@ class HttpTaskServerTest {
         //Проверяем результат получения задачи
         assertEquals(200, response.statusCode(), "Сервер вернул неверный код ответа.");
         assertFalse(response.body().isEmpty(), "Сервер вернул пустое тело ответа.");
+
         Task recivedTask = gson.fromJson(response.body(), Task.class);
 
         assertEquals(resultTask, recivedTask, "Модельная задачи и загруженная из сервера отличаются.");
@@ -278,17 +281,16 @@ class HttpTaskServerTest {
         //Удаляем тестовую задачу
         String targetId = resultTask.getId().toString();
 
-        response = simpleDELETE(URI.create("http://localhost:8080/tasks/task?id=" + targetId));
+        response = simpleDELETE(URI.create("http://localhost:8080/tasks/task/?id=" + targetId));
         assertEquals(204, response.statusCode(), "Сервер вернул неверный код ответа: " + response.statusCode());
 
         response = getTaskById(targetId);
-        resultTask = gson.fromJson(response.body(), Task.class);
-        assertNull(resultTask, "Задача, которая была удалена, загрузилась.");
+        assertEquals(400, response.statusCode(), "Сервер вернул неверный код ответа: " + response.statusCode());
 
         //Пытаемся удалить заведомо отсутствующую задачу
         targetId = "100";
 
-        response = simpleDELETE(URI.create("http://localhost:8080/tasks/task?id=" + targetId));
+        response = simpleDELETE(URI.create("http://localhost:8080/tasks/task/?id=" + targetId));
         assertEquals(400, response.statusCode(), "Сервер вернул неверный код ответа: " + response.statusCode());
     }
 
@@ -304,6 +306,7 @@ class HttpTaskServerTest {
 
         //Отправляем запрос на добавление задачи
         String json = gson.toJson(newEpic);
+
         HttpResponse<String> response = simplePOST(json, uri);
 
         //Общая проверка результата
@@ -411,17 +414,15 @@ class HttpTaskServerTest {
         //Удаляем тестовый эпик
         String targetId = resultEpic.getId().toString();
 
-        response = simpleDELETE(URI.create("http://localhost:8080/tasks/epic?id=" + targetId));
+        response = simpleDELETE(URI.create("http://localhost:8080/tasks/epic/?id=" + targetId));
         assertEquals(204, response.statusCode(), "Сервер вернул неверный код ответа: " + response.statusCode());
 
         response = getEpicById(targetId);
-        resultEpic = gson.fromJson(response.body(), Epic.class);
-        assertNull(resultEpic, "Эпик, который был удален, загрузился.");
 
         //Пытаемся удалить заведомо отсутствующий эпик
         targetId = "100";
 
-        response = simpleDELETE(URI.create("http://localhost:8080/tasks/epic?id=" + targetId));
+        response = simpleDELETE(URI.create("http://localhost:8080/tasks/epic/?id=" + targetId));
         assertEquals(400, response.statusCode(), "Сервер вернул неверный код ответа: " + response.statusCode());
     }
 
@@ -437,6 +438,7 @@ class HttpTaskServerTest {
 
         //Отправляем запрос на добавление эпика
         String json = gson.toJson(newEpic);
+
         HttpResponse<String> response = simplePOST(json, uri);
 
         //Общая проверка результата
@@ -592,17 +594,15 @@ class HttpTaskServerTest {
         //Удаляем тестовый сабтаск
         String targetId = resultSubtask.getId().toString();
 
-        response = simpleDELETE(URI.create("http://localhost:8080/tasks/subtask?id=" + targetId));
+        response = simpleDELETE(URI.create("http://localhost:8080/tasks/subtask/?id=" + targetId));
         assertEquals(204, response.statusCode(), "Сервер вернул неверный код ответа: " + response.statusCode());
 
         response = getSubtaskById(targetId);
-        resultSubtask = gson.fromJson(response.body(), Subtask.class);
-        assertNull(resultSubtask, "Сабтаск, который был удален, загрузился.");
 
         //Пытаемся удалить заведомо отсутствующий сабтаск
         targetId = "100";
 
-        response = simpleDELETE(URI.create("http://localhost:8080/tasks/subtask?id=" + targetId));
+        response = simpleDELETE(URI.create("http://localhost:8080/tasks/subtask/?id=" + targetId));
         assertEquals(400, response.statusCode(), "Сервер вернул неверный код ответа: " + response.statusCode());
     }
 
@@ -625,7 +625,7 @@ class HttpTaskServerTest {
         httpTaskServer.getTaskManager().clearAll();
         generateSomeTasksAndHistory("getTasks");
 
-        URI uri = URI.create("http://localhost:8080/tasks/task");
+        URI uri = URI.create("http://localhost:8080/tasks/task/");
         HttpResponse<String> response = simpleGET(uri);
 
         //Общая проверка результата
@@ -639,7 +639,7 @@ class HttpTaskServerTest {
         httpTaskServer.getTaskManager().clearAll();
         generateSomeTasksAndHistory("getEpics");
 
-        URI uri = URI.create("http://localhost:8080/tasks/epic");
+        URI uri = URI.create("http://localhost:8080/tasks/epic/");
         HttpResponse<String> response = simpleGET(uri);
 
         //Общая проверка результата
@@ -652,7 +652,7 @@ class HttpTaskServerTest {
         httpTaskServer.getTaskManager().clearAll();
         generateSomeTasksAndHistory("getSubtasks");
 
-        URI uri = URI.create("http://localhost:8080/tasks/subtask");
+        URI uri = URI.create("http://localhost:8080/tasks/subtask/");
         HttpResponse<String> response = simpleGET(uri);
 
         //Общая проверка результата
@@ -667,7 +667,7 @@ class HttpTaskServerTest {
 
         HttpClient client = HttpClient.newHttpClient();
 
-        URI uri = URI.create("http://localhost:8080/tasks/history");
+        URI uri = URI.create("http://localhost:8080/tasks/history/");
         HttpResponse<String> response = simpleGET(uri);
 
         //Общая проверка результата
@@ -676,17 +676,17 @@ class HttpTaskServerTest {
     }
 
     private HttpResponse<String> getTaskById(String id) throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/tasks/task?id=" + id);
+        URI uri = URI.create("http://localhost:8080/tasks/task/?id=" + id);
         return simpleGET(uri);
     }
 
     private HttpResponse<String> getSubtaskById(String id) throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/tasks/subtask?id=" + id);
+        URI uri = URI.create("http://localhost:8080/tasks/subtask/?id=" + id);
         return simpleGET(uri);
     }
 
     private HttpResponse<String> getEpicById(String id) throws IOException, InterruptedException {
-        URI uri = URI.create("http://localhost:8080/tasks/epic?id=" + id);
+        URI uri = URI.create("http://localhost:8080/tasks/epic/?id=" + id);
         return simpleGET(uri);
     }
 

@@ -4,13 +4,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
-    protected ArrayList<Integer> subtaskIds;
+    protected ArrayList<Integer> subtaskIds = new ArrayList<>();
 
     protected LocalDateTime endTime;
 
     public Epic(String name, String discription) {
         super(name, discription);
-        this.subtaskIds = new ArrayList<>();
     }
 
     public Epic(String name, String discription, TaskStatus status, int id) {
@@ -34,6 +33,11 @@ public class Epic extends Task {
         }
     }
 
+    public void setSubtaskIds(ArrayList<Integer> ids) {
+        subtaskIds.clear();
+        subtaskIds.addAll(ids);
+    }
+
     public ArrayList<Integer> getSubtaskIds() {
         return new ArrayList<>(this.subtaskIds);
     }
@@ -50,8 +54,8 @@ public class Epic extends Task {
     @Override
     public String toString() {
         return this.getClass().toString() + "{" + // имя класса
-                super.fieldsToString()+
-                (endTime!=null?(", endTime='" + endTime + '\''):"")+
+                super.fieldsToString() +
+                (endTime != null ? (", endTime='" + endTime + '\'') : "") +
                 ", subtaskIds=" + this.subtaskIds.toString() + // поле3=значение3
                 '}';
     }
