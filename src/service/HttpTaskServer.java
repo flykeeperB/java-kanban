@@ -44,7 +44,7 @@ public class HttpTaskServer {
         httpServer.createContext("/tasks/epic/", this::handleEpic);
         httpServer.createContext("/tasks/subtask/", this::handleSubtask);
         httpServer.createContext("/tasks/subtask/epic/", this::handleEpicSubtasks);
-        httpServer.createContext("/tasks/", this::handleAllTasks);
+        httpServer.createContext("/tasks/", this::handlePrioritizedTasks);
 
         httpServer.start();
 
@@ -409,11 +409,11 @@ public class HttpTaskServer {
         }
     }
 
-    private void handleAllTasks(HttpExchange httpExchange) throws IOException {
+    private void handlePrioritizedTasks(HttpExchange httpExchange) throws IOException {
         if (httpExchange.getRequestMethod().equals("GET")) {
             Gson gson = createGson();
             simpleResponse(httpExchange, 200,
-                    gson.toJson(this.taskManager.getAllTasks()));
+                    gson.toJson(this.taskManager.getPrioritizedTasks()));
         } else {
             msg(1, "handleAllTasks", "Использован неверный метод для вызова");
         }
